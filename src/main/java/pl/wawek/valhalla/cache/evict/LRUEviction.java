@@ -1,4 +1,4 @@
-package pl.wawek.valhalla.cache.algorithm;
+package pl.wawek.valhalla.cache.evict;
 
 import pl.wawek.valhalla.cache.CacheEntry;
 

@@ -4,8 +4,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.reflect.MethodSignature;
-import pl.wawek.valhalla.cache.algorithm.AlgorithmType;
 
 /**
  * Aspect which holds logic behind the cache.
@@ -13,7 +11,7 @@ import pl.wawek.valhalla.cache.algorithm.AlgorithmType;
 @Aspect
 public class CacheAspect {
 
-    private ValhallaCache valhallaCache;
+    private ValhallaCache valhallaCache = ValhallaCache.getInstance();
 
     /**
      * Always before execution of any method annotated with @see Valhalla annotation
@@ -26,9 +24,6 @@ public class CacheAspect {
      */
     @Around("execution(@pl.wawek.valhalla.cache.Valhalla ** *(..))")
     public Object checkCache(ProceedingJoinPoint joinPoint) throws Throwable {
-        AlgorithmType algorithm = annotationAlgorithm(joinPoint);
-        valhallaCache = ValhallaCache.getInstance(algorithm);
-
         String cacheKey = buildCacheKey(joinPoint.getSignature(), joinPoint.getArgs());
         if (valhallaCache.contains(cacheKey)) {
             return valhallaCache.get(cacheKey);
@@ -45,17 +40,5 @@ public class CacheAspect {
             key += arg;
         }
         return key;
-    }
-
-    private AlgorithmType annotationAlgorithm(ProceedingJoinPoint joinPoint) throws NoSuchMethodException {
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        String methodName = signature.getMethod().getName();
-        Class<?>[] parameterTypes = signature.getMethod().getParameterTypes();
-        Valhalla valhalla = joinPoint
-                .getTarget()
-                .getClass()
-                .getDeclaredMethod(methodName, parameterTypes)
-                .getAnnotation(Valhalla.class);
-        return valhalla.algorithm();
     }
 }

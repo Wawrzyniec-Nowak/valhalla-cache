@@ -1,14 +1,25 @@
 package pl.wawek.valhalla.cache;
 
 import org.junit.Assert;
-import org.junit.Ignore;
+import org.junit.Before;
 import org.junit.Test;
+import pl.wawek.valhalla.cache.evict.Algorithm;
 
 import java.util.stream.IntStream;
 
 public class ValhallaCacheTest {
 
+    private static final int CAPACITY = 5;
     private ValhallaClass testClass = new ValhallaClass();
+
+    @Before
+    public void createCache() {
+        new ValhallaConfiguration.Config()
+                .algorithm(Algorithm.LRU)
+                .capacity(CAPACITY)
+                .name("testCache")
+                .configure();
+    }
 
     @Test
     public void shouldReturnTheSameSystemMillis() {
@@ -55,9 +66,8 @@ public class ValhallaCacheTest {
     }
 
     @Test
-    @Ignore("This should be tested in a better way instead of waiting so long.")
     public void cacheShouldBeClearedAfterTooManyCacheEntries() {
-        final int cacheCapacity = 1000;
+        final int cacheCapacity = CAPACITY;
         IntStream.range(0, cacheCapacity + 3)
                 .forEach(i -> testClass.concatArguments(i, "test"));
 

@@ -1,8 +1,8 @@
 package pl.wawek.valhalla.cache;
 
-import pl.wawek.valhalla.cache.algorithm.AlgorithmType;
-import pl.wawek.valhalla.cache.algorithm.CacheEviction;
-import pl.wawek.valhalla.cache.algorithm.LRUEviction;
+import pl.wawek.valhalla.cache.evict.Algorithm;
+import pl.wawek.valhalla.cache.evict.CacheEviction;
+import pl.wawek.valhalla.cache.evict.LRUEviction;
 
 import java.util.List;
 import java.util.Map;
@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 class ValhallaCache {
 
-    private static final int CAPACITY = 1000;
+    private long capacity;
 
     private CacheEviction eviction;
 
@@ -27,14 +27,13 @@ class ValhallaCache {
         private static final ValhallaCache INSTANCE = new ValhallaCache();
     }
 
-    /**
-     * Initializes the cache on demand and sets the eviction algorithm.
-     *
-     * @param algorithm eviction algorithm
-     * @return the cache instance
-     */
-    public static ValhallaCache getInstance(AlgorithmType algorithm) {
+    static ValhallaCache getInstance() {
+        return LazyLoader.INSTANCE;
+    }
+
+    static ValhallaCache initialize(Algorithm algorithm, long capacity) {
         ValhallaCache instance = LazyLoader.INSTANCE;
+        instance.capacity = capacity;
         switch (algorithm) {
             case LRU:
                 instance.eviction = new LRUEviction();
@@ -70,13 +69,13 @@ class ValhallaCache {
 
     /**
      * Inserts the object which needs to be cached. If the size of the cache
-     * has already exceeded the maximum capacity thn eviction algorithm is run.
+     * has already exceeded the maximum capacity thn eviction evict is run.
      *
      * @param key           the key under which the object will be stored
      * @param objectToCache value which should be stored
      */
     void put(String key, Object objectToCache) {
-        while (cache.size() >= CAPACITY) {
+        while (cache.size() >= capacity) {
             List<CacheEntry> evicted = eviction.evict(cache.values());
             evicted.forEach(this::removeValue);
         }

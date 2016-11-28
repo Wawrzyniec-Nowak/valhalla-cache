@@ -74,11 +74,20 @@ Dependencies listed in *weaveDependencies* must be included in the *dependencies
 ```
 
 ##How to use valhalla-cache
-Usage is pretty simple, all which needs to be done is to put *@Valhalla* annotation over method which returned value should be cached. Annotation is configured by a field *algorithm* which defines the eviction algorithm, LRU is set by default.
+Cache needs to be configured. The configuration requires three parameters: maximum capacity of the cache, name of the cache and the eviction algorithm. Sample configuration is below
+```java
+new ValhallaConfiguration.Config()
+                .algorithm(Algorithm.LRU)
+                .capacity(CAPACITY)
+                .name("testCache")
+                .configure();
+```
+
+Finally, all which needs to be done is to put *@Valhalla* annotation over method which returned value should be cached.
 ```java
 public class TestClass {
 
-  @Valhalla(algorithm = AlgorithmType.LRU)
+  @Valhalla
   public long cacheValue() {
   ...
   }

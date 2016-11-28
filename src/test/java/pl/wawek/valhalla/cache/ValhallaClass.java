@@ -1,13 +1,12 @@
 package pl.wawek.valhalla.cache;
 
 import org.apache.log4j.Logger;
-import pl.wawek.valhalla.cache.algorithm.AlgorithmType;
 
 class ValhallaClass {
 
     private Logger logger = Logger.getLogger(ValhallaClass.class);
 
-    @Valhalla(algorithm = AlgorithmType.LRU)
+    @Valhalla
     long currentTimeMillisAfterTwoSeconds() {
         try {
             Thread.sleep(2000);
