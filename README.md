@@ -1,6 +1,6 @@
 # valhalla-cache
 ## About
-This is a custom library which enables caching methods' calls. In a current version it is highly coupled with the Spring 4 framework. 
+This is a custom library which enables caching methods' calls. In a current version it is tightly coupled with the Spring 4 framework.
 
 ## How to configure valhalla-cache
 In order to use **valhalla-cache** library must be installed in a local maven repository. Then it can be included in pom as a maven dependency
@@ -73,22 +73,13 @@ Dependencies listed in *weaveDependencies* must be included in the *dependencies
 </dependency>
 ```
 
-Finally in order to work properly the job responsible for clearing cache should be included. To do so the *@EnableOdinAnger* must be put in the Spring *@Configuration* class.
-
-```java
-@Configuration
-@EnableOdinAnger
-public class ValhallaCacheConfiguration {
-...
-}
-```
 ##How to use valhalla-cache
-Usage is pretty simple, all which needs to be done is to put *@Valhalla* annotation over method which returned value should be cached. Annotation is configured by a field *maxAge* which defines the maximum time of caching in milliseconds, 5 minutes by default.
+Usage is pretty simple, all which needs to be done is to put *@Valhalla* annotation over method which returned value should be cached. Annotation is configured by a field *algorithm* which defines the eviction algorithm, LRU is set by default.
 ```java
 public class TestClass {
 
-  @Valhalla(maxAge = 10000)
-  public long cacheValueForTenSeconds() {
+  @Valhalla(algorithm = AlgorithmType.LRU)
+  public long cacheValue() {
   ...
   }
 }

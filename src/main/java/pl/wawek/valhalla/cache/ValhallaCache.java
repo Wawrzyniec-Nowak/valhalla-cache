@@ -1,11 +1,21 @@
 package pl.wawek.valhalla.cache;
 
+import pl.wawek.valhalla.cache.algorithm.AlgorithmType;
+import pl.wawek.valhalla.cache.algorithm.CacheEviction;
+import pl.wawek.valhalla.cache.algorithm.LRUEviction;
+
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Implementation of the valhalla cache.
  */
-public class ValhallaCache {
+class ValhallaCache {
+
+    private static final int CAPACITY = 1000;
+
+    private CacheEviction eviction;
 
     private ValhallaCache() {
     }
@@ -18,17 +28,29 @@ public class ValhallaCache {
     }
 
     /**
-     * Initializes the cache on demand.
+     * Initializes the cache on demand and sets the eviction algorithm.
+     *
+     * @param algorithm eviction algorithm
      * @return the cache instance
      */
-    public static ValhallaCache getInstance() {
-        return LazyLoader.INSTANCE;
+    public static ValhallaCache getInstance(AlgorithmType algorithm) {
+        ValhallaCache instance = LazyLoader.INSTANCE;
+        switch (algorithm) {
+            case LRU:
+                instance.eviction = new LRUEviction();
+                break;
+            default:
+                instance.eviction = new LRUEviction();
+                break;
+        }
+        return instance;
     }
 
-    private ConcurrentHashMap<String, CachedObject> cache = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, CacheEntry> cache = new ConcurrentHashMap<>();
 
     /**
      * Checks if the key is in the cache.
+     *
      * @param key the key which should be checked in cache
      * @return true if the key exists in the cache, false otherwise
      */
@@ -38,6 +60,7 @@ public class ValhallaCache {
 
     /**
      * Fetches the cached object from the cache
+     *
      * @param key the key for which the object is stored in cache
      * @return the cached object
      */
@@ -46,24 +69,26 @@ public class ValhallaCache {
     }
 
     /**
-     * Inserts the object which needs to be cached.
-     * @param key the key under which the object will be stored
+     * Inserts the object which needs to be cached. If the size of the cache
+     * has already exceeded the maximum capacity thn eviction algorithm is run.
+     *
+     * @param key           the key under which the object will be stored
      * @param objectToCache value which should be stored
-     * @param maxAge time in milliseconds for how long the value will be cached
      */
-    void put(String key, Object objectToCache, long maxAge) {
-        cache.put(key, new CachedObject(objectToCache, maxAge));
+    void put(String key, Object objectToCache) {
+        while (cache.size() >= CAPACITY) {
+            List<CacheEntry> evicted = eviction.evict(cache.values());
+            evicted.forEach(this::removeValue);
+        }
+        cache.put(key, new CacheEntry(objectToCache));
     }
 
-    /**
-     * Iterates over the cache and removes values which expired.
-     */
-    public void clearExpiredObjects() {
-        cache.keySet().forEach(key -> {
-            CachedObject cachedObject = cache.get(key);
-            if (cachedObject.isExpired()) {
-                cache.remove(key);
+    private void removeValue(CacheEntry entry) {
+        for (Map.Entry<String, CacheEntry> mapEntry : cache.entrySet()) {
+            if (mapEntry.getValue().equals(entry)) {
+                cache.remove(mapEntry.getKey());
+                break;
             }
-        });
+        }
     }
 }
