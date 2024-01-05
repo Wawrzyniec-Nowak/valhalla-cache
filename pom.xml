@@ -14,7 +14,7 @@
         <org.aspectj.aspectjrt.version>1.8.9</org.aspectj.aspectjrt.version>
         <junit.version>4.12</junit.version>
         <log4j.version>1.2.17</log4j.version>
-        <spring.framework.version>4.3.3.RELEASE</spring.framework.version>
+        <spring.framework.version>4.3.30.RELEASE</spring.framework.version>
     </properties>
 
     <dependencies>
